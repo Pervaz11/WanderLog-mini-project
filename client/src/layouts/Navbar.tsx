@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaBell, FaUserPlus } from "react-icons/fa";
+import { Globe } from 'lucide-react';
 
 const Navbar: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,13 +12,9 @@ const Navbar: React.FC = () => {
             className="w-full px-4 py-3 md:px-6 md:py-4 z-10 flex justify-between items-center shadow-sm bg-white"
         >
             {/* Logo */}
-            <div className='flex items-center gap-4'>
+            <div className='flex items-center gap-4 hover:scale-105 transition-transform duration-500 ease-in-out'>
                 <Link to={"/"} className='flex items-center gap-2 text-gray-800 text-2xl font-bold'>
-                    <img
-                        className='w-8 hover:scale-105 transition-transform duration-500 ease-in-out'
-                        src="/vite.svg"
-                        alt="navbar logo"
-                    />
+                    <Globe className="w-7 h-6.5 text-blue-600" />
                     <h3>WanderLog</h3>
                 </Link>
             </div>
@@ -25,16 +22,24 @@ const Navbar: React.FC = () => {
             {/* Desktop Links */}
             <ul className='hidden md:flex gap-4 font-medium uppercase text-sm tracking-wide'>
                 <li>
-                    <Link to="/" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-7">Home</Link>
+                    <Link to="/" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-10">
+                        Dashboard
+                    </Link>
                 </li>
                 <li>
-                    <Link to="/Apartments" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-10">Apartments</Link>
+                    <Link to="/Apartments" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-8">
+                        My Lists
+                    </Link>
                 </li>
                 <li>
-                    <Link to="/About" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-7">About</Link>
+                    <Link to="/About" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-7">
+                        Journal
+                    </Link>
                 </li>
                 <li>
-                    <Link to="/Contact" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-9">Contact</Link>
+                    <Link to="/Contact" className="text-gray-700 hover:text-black transition relative px-4 py-2 duration-300  dark:hover:text-black before:absolute before:bottom-0 before:left-4 before:w-0 before:h-[2px] before:bg-black dark:before:bg-black before:transition-all text-sm before:duration-300 hover:before:w-7">
+                        Explore
+                    </Link>
                 </li>
             </ul>
 
