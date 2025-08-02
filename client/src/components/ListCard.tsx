@@ -27,7 +27,7 @@ const ListCard: React.FC<ListCardProps> = ({
     const progress = (completed / total) * 100;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border flex flex-col overflow-hidden transition hover:shadow-md">
+        <div className="bg-white rounded-xl shadow-sm flex flex-col overflow-hidden transition hover:shadow-md">
             <div className="bg-gray-100 h-40 flex items-center justify-center">
                 <div className="text-gray-400 text-sm">No Image</div>
             </div>

@@ -11,7 +11,7 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ icon: Icon, label, value, iconColor, bgColor }) => {
     return (
-        <div className="flex items-center gap-4 p-5 rounded-xl shadow-sm border border-gray-500 bg-white transition hover:shadow-md">
+        <div className="flex items-center gap-4 p-5 rounded-xl shadow-sm bg-white transition hover:shadow-md">
             <div className={`p-2 rounded-md ${bgColor}`}>
                 <Icon className={`w-6 h-6 ${iconColor}`} />
             </div>
