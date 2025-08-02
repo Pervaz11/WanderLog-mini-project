@@ -15,7 +15,10 @@ type Filters = {
     createdBefore: string;
 };
 
-const allTags = ["culture", "history", "food", "roadtrip", "coastal", "adventure", "winter", "northernlights", "nature"];
+const allTags = [
+    "culture", "history", "food", "roadtrip",
+    "coastal", "adventure", "winter", "northernlights", "nature"
+];
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -32,7 +35,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
     const toggleTag = (tag: string) => {
         setFilters((prev) => ({
             ...prev,
-            tags: prev.tags.includes(tag) ? prev.tags.filter((t) => t !== tag) : [...prev.tags, tag],
+            tags: prev.tags.includes(tag)
+                ? prev.tags.filter((t) => t !== tag)
+                : [...prev.tags, tag],
         }));
     };
 
@@ -50,7 +55,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
             createdBefore: "",
         });
         onClear();
-        setIsOpen(false); // no animation
+        closeWithAnimation(); // animasiya ilə bağlanır
     };
 
     const closeWithAnimation = () => {
@@ -65,9 +70,10 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="px-4 flex gap-2 py-1.5 bg-gray-100 rounded-md hover:bg-gray-200 font-semibold text-md text-gray-700 transition duration-300"
+                className="px-4 flex items-center gap-2 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:shadow-md hover:bg-gray-50 transition duration-300 font-medium text-gray-800"
             >
-                <FunnelPlus className="w-5 text-gray-700" /> Filter
+                <FunnelPlus className="w-5 h-5" />
+                Filter
             </button>
 
             {isOpen && (
@@ -75,25 +81,30 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
                     initial={{ opacity: 0, x: 50 }}
                     animate={animateClose ? { opacity: 0, x: 50 } : { opacity: 1, x: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-50 p-6 overflow-y-auto"
+                    className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 p-6 overflow-y-auto rounded-l-xl border-l border-gray-200"
                 >
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold">Filters</h2>
-                        <button onClick={closeWithAnimation}>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold text-gray-900">Filters</h2>
+                        <button
+                            onClick={closeWithAnimation}
+                            className="hover:bg-gray-100 p-1.5 rounded-full transition"
+                        >
                             <X className="w-5 h-5 text-gray-600" />
                         </button>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                         {/* Tags */}
                         <div>
-                            <p className="font-medium text-gray-800 mb-2">Tags</p>
+                            <p className="font-medium text-gray-700 mb-2">Tags</p>
                             <div className="flex flex-wrap gap-2">
                                 {allTags.map((tag) => (
                                     <button
                                         key={tag}
                                         onClick={() => toggleTag(tag)}
-                                        className={`px-3 py-1 rounded-full text-sm border ${filters.tags.includes(tag) ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-700"
+                                        className={`px-3 py-1.5 rounded-full text-sm border transition-all duration-200 ${filters.tags.includes(tag)
+                                                ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700"
+                                                : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200"
                                             }`}
                                     >
                                         #{tag}
@@ -104,7 +115,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
 
                         {/* Completion */}
                         <div>
-                            <label className="flex items-center gap-2">
+                            <label className="flex items-center gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
                                     checked={filters.completedOnly}
@@ -114,6 +125,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
                                             completedOnly: e.target.checked,
                                         }))
                                     }
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                 />
                                 <span className="text-sm text-gray-700">Only show completed</span>
                             </label>
@@ -121,11 +133,13 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
 
                         {/* Collaborators */}
                         <div>
-                            <label className="block mb-1 text-sm font-medium text-gray-800">Minimum collaborators</label>
+                            <label className="block mb-1 text-sm font-medium text-gray-700">
+                                Minimum collaborators
+                            </label>
                             <input
                                 type="number"
                                 min={0}
-                                className="w-full border border-gray-300 rounded-md px-3 py-1 text-sm"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 value={filters.minCollaborators}
                                 onChange={(e) =>
                                     setFilters((prev) => ({
@@ -138,10 +152,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
 
                         {/* Date Range */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-800 mb-1">Created after</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Created after
+                            </label>
                             <input
                                 type="date"
-                                className="w-full border border-gray-300 rounded-md px-3 py-1 text-sm mb-3"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 value={filters.createdAfter}
                                 onChange={(e) =>
                                     setFilters((prev) => ({
@@ -150,10 +166,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
                                     }))
                                 }
                             />
-                            <label className="block text-sm font-medium text-gray-800 mb-1">Created before</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Created before
+                            </label>
                             <input
                                 type="date"
-                                className="w-full border border-gray-300 rounded-md px-3 py-1 text-sm"
+                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 value={filters.createdBefore}
                                 onChange={(e) =>
                                     setFilters((prev) => ({
@@ -166,16 +184,16 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ onApply, onClear }) => {
                     </div>
 
                     {/* Buttons */}
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-8 flex justify-between">
                         <button
                             onClick={clearFilters}
-                            className="px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-md hover:bg-gray-100"
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition"
                         >
                             Clear
                         </button>
                         <button
                             onClick={applyFilters}
-                            className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                         >
                             Apply Filters
                         </button>
