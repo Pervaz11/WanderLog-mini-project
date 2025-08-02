@@ -6,10 +6,8 @@ const Navbar: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
+
         <nav
-            data-aos="fade-down"
-            data-aos-duration="1000"
-            data-aos-easing="ease-in-out"
             className="w-full px-4 py-3 md:px-6 md:py-4 z-10 flex justify-between items-center shadow-sm bg-white"
         >
             {/* Logo */}
@@ -123,6 +121,7 @@ const Navbar: React.FC = () => {
                 </div>
             </div>
         </nav>
+
     );
 };
 
