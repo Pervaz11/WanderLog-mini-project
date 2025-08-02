@@ -3,7 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import StatCard from "../components/StatCard";
 import ListCard from "../components/ListCard";
 import { MapPin, Star, Users, Calendar } from "lucide-react";
+import FilterSidebar from "../components/FilterSidebar";
 
+// Type for filters
+type Filters = {
+    tags: string[];
+    completedOnly: boolean;
+    minCollaborators: number;
+    createdAfter: string;
+    createdBefore: string;
+};  
+
+// Stats section
 const stats = [
     {
         icon: MapPin,
@@ -35,7 +46,20 @@ const stats = [
     },
 ];
 
+// Lists
 const initialMyLists = [
+    {
+        title: "European Adventure 2024",
+        description:
+            "Exploring the historic cities and beautiful landscapes of Europe",
+        isPublic: true,
+        isNew: true,
+        completed: 3,
+        total: 8,
+        tags: ["culture", "history", "food"],
+        collaborators: 2,
+        createdAt: "1/15/2024",
+    },
     {
         title: "European Adventure 2024",
         description:
@@ -78,15 +102,21 @@ const initialSharedLists = [
 const Home: React.FC = () => {
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"my" | "shared">("my");
+    const [filters, setFilters] = useState<Filters | null>(null);
+
+    const applyAllFilters = (list: any) => {
+        const passSearch = list.title.toLowerCase().includes(search.toLowerCase());
+        const passTags = !filters?.tags?.length || filters.tags.every(tag => list.tags.includes(tag));
+        const passCompleted = !filters?.completedOnly || list.completed === list.total;
+        const passCollaborators = filters?.minCollaborators == null || list.collaborators >= filters.minCollaborators;
+        const passCreatedAfter = !filters?.createdAfter || new Date(list.createdAt) >= new Date(filters.createdAfter);
+        const passCreatedBefore = !filters?.createdBefore || new Date(list.createdAt) <= new Date(filters.createdBefore);
+
+        return passSearch && passTags && passCompleted && passCollaborators && passCreatedAfter && passCreatedBefore;
+    };
 
     const filteredLists =
-        activeTab === "my"
-            ? initialMyLists.filter((list) =>
-                list.title.toLowerCase().includes(search.toLowerCase())
-            )
-            : initialSharedLists.filter((list) =>
-                list.title.toLowerCase().includes(search.toLowerCase())
-            );
+        (activeTab === "my" ? initialMyLists : initialSharedLists).filter(applyAllFilters);
 
     return (
         <>
@@ -129,25 +159,14 @@ const Home: React.FC = () => {
                         placeholder="Search your travel lists..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full md:w-[400px] border rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full shadow border border-gray-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100 transition">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V19a1 1 0 01-2 0v-5.586l-5.707-6.707A1 1 0 017 6V4z"
-                            />
-                        </svg>
-                        Filter
-                    </button>
+                    <div className="flex-shrink-0">
+                        <FilterSidebar
+                            onApply={(f) => setFilters(f)}
+                            onClear={() => setFilters(null)}
+                        />
+                    </div>
                 </div>
 
                 {/* Tabs */}
@@ -155,22 +174,23 @@ const Home: React.FC = () => {
                     <button
                         onClick={() => setActiveTab("my")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "my"
-                                ? "bg-black text-white"
-                                : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-black text-white"
+                            : "text-gray-600 hover:bg-gray-100"
                             }`}
                     >
-                        My Lists ({initialMyLists.length})
+                        My Lists ({initialMyLists.filter(applyAllFilters).length})
                     </button>
                     <button
                         onClick={() => setActiveTab("shared")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "shared"
-                                ? "bg-black text-white"
-                                : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-black text-white"
+                            : "text-gray-600 hover:bg-gray-100"
                             }`}
                     >
-                        Shared with Me ({initialSharedLists.length})
+                        Shared with Me ({initialSharedLists.filter(applyAllFilters).length})
                     </button>
                 </div>
+
 
                 {/* Cards */}
                 <AnimatePresence mode="wait">
