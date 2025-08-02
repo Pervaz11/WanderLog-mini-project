@@ -65,7 +65,63 @@ const Navbar: React.FC = () => {
                 </Link>
             </div>
 
-            
+            {/* Mobile Menu Icon */}
+            <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className='md:hidden text-3xl p-1'
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    strokeWidth="1.5" stroke="currentColor"
+                    className={`w-8 h-8 transition-transform duration-300 ${isMenuOpen ? "rotate-90" : ""}`}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+
+            {/* Mobile Dropdown */}
+            <div
+                className={`absolute top-16 left-0 w-full bg-white shadow-md md:hidden transition-all duration-500 overflow-hidden ${isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+            >
+                <ul className="flex flex-col gap-1 px-4 py-4">
+                    <li>
+                        <Link to="/" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Home</Link>
+                    </li>
+                    <li>
+                        <Link to="/Apartments" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Apartments</Link>
+                    </li>
+                    <li>
+                        <Link to="/About" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">About</Link>
+                    </li>
+                    <li>
+                        <Link to="/Contact" className="block px-4 py-2 rounded-md text-gray-700 hover:bg-gray-100">Contact</Link>
+                    </li>
+                </ul>
+                {/* Mobile Actions */}
+                <div className="flex flex-col gap-2 border-t border-gray-200 px-4 py-3">
+                    <button
+                        type="button"
+                        className="relative flex items-center justify-center w-full rounded-md border border-slate-300 py-2 text-slate-700 font-semibold hover:bg-slate-100 transition"
+                    >
+                        <FaBell className="mr-2" />
+                        Notifications
+                        <span className="absolute top-1 right-3 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                            3
+                        </span>
+                    </button>
+                    <Link
+                        to="/auth/login"
+                        className="w-full inline-flex items-center uppercase gap-2 justify-center rounded-md border border-slate-700 py-2 text-slate-700 font-semibold hover:bg-slate-800 hover:text-white transition"
+                    >
+                        <FaUserPlus className='text-lg' />Login
+                    </Link>
+                    <Link
+                        to="/create"
+                        className="w-full inline-flex items-center justify-center rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 py-2 text-white font-semibold hover:from-indigo-600 hover:to-purple-600 transition"
+                    >
+                        + Create
+                    </Link>
+                </div>
+            </div>
         </nav>
     );
 };
