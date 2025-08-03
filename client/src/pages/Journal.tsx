@@ -1,7 +1,7 @@
-const Journey = () => {
-    return (
-        <div>Journal</div>
-    )
+const Journal = () => {
+  return (
+    <div>Journal</div>
+  )
 }
 
-export default Journey
+export default Journal

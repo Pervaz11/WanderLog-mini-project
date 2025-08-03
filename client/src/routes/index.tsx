@@ -6,8 +6,8 @@ import Layout from "../layouts/Layout";
 // Client Pages
 import Home from "../pages/Home";
 import Explore from "../pages/Explore";
-import Journal from "../pages/Journal";
 import { MyLists } from "../pages/MyLists";
+import { Journal } from "../pages/Journal";
 
 // // Auth Pages
 // import Login from "../pages/auth/Login";
