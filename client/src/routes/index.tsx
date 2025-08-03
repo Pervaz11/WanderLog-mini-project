@@ -5,9 +5,9 @@ import Layout from "../layouts/Layout";
 
 // Client Pages
 import Home from "../pages/Home";
-import MyList from "../pages/MyLists";
 import Explore from "../pages/Explore";
 import Journal from "../pages/Journal";
+import { MyLists } from "../pages/MyLists";
 
 // // Auth Pages
 // import Login from "../pages/auth/Login";
@@ -22,7 +22,7 @@ const routes: RouteObject[] = [
         element: <Layout />,
         children: [
             { index: true, element: <Home /> },
-            { path: "my-lists", element: <MyList /> },
+            { path: "my-lists", element: <MyLists /> },
             { path: "journal", element: <Journal /> },
             { path: "explore", element: <Explore /> },
         ],
