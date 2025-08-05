@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaBell, FaUserPlus } from "react-icons/fa";
 import { Globe } from 'lucide-react';
+import NotificationBell from '../components/NotificationBell';
 
 const Navbar: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,15 +46,10 @@ const Navbar: React.FC = () => {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center gap-3">
-                <button
-                    type="button"
-                    className="relative p-2 rounded-full hover:bg-gray-200 transition"
-                >
-                    <FaBell className="text-2xl text-gray-700" />
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                        3
-                    </span>
-                </button>
+                <div>
+                    <NotificationBell />
+                    {/* digər button/linklər */}
+                </div>
                 <Link
                     to="/auth/login"
                     className="inline-flex uppercase items-center gap-2 rounded-md border border-slate-700 py-1.5 px-4 text-slate-700 font-semibold hover:bg-slate-800 hover:text-white transition"
@@ -61,7 +57,7 @@ const Navbar: React.FC = () => {
                     <FaUserPlus className='text-lg' />Login
                 </Link>
                 <Link
-                    to="/create"
+                    to="./create"
                     className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 py-1.5 px-4 text-white font-semibold hover:from-indigo-600 hover:to-purple-600 transition"
                 >
                     + Create
@@ -125,7 +121,7 @@ const Navbar: React.FC = () => {
                     </Link>
                 </div>
             </div>
-        </nav>
+        </nav >
 
     );
 };
