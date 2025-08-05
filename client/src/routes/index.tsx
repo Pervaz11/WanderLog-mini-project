@@ -9,6 +9,7 @@ import Home from "../pages/Home";
 import { Explore } from "../pages/Explore";
 import { MyLists } from "../pages/MyLists";
 import { Journal } from "../pages/Journal";
+import CreateList from "../pages/CreateList";
 
 // // Auth Pages
 import Login from "../pages/auth/Login";
@@ -26,6 +27,7 @@ const routes: RouteObject[] = [
             { path: "my-lists", element: <MyLists /> },
             { path: "journal", element: <Journal /> },
             { path: "explore", element: <Explore /> },
+            { path: "create", element: <CreateList /> },
         ],
     },
 
