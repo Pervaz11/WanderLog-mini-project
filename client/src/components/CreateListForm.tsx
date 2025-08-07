@@ -8,6 +8,7 @@ import {
     Users,
     X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CreateListForm = () => {
     const [isPrivate, setIsPrivate] = useState(true);
@@ -29,10 +30,10 @@ const CreateListForm = () => {
 
     return (
         <div className="max-w-2xl mx-auto px-6 py-10">
-            <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition mb-4">
+            <Link to="/" className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition mb-4">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Dashboard
-            </button>
+            </Link>
 
             <h1 className="text-3xl font-bold text-gray-800 mb-1">Create New Travel List</h1>
             <p className="text-gray-500 mb-8">Start planning your next adventure</p>
