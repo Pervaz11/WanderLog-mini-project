@@ -4,7 +4,7 @@ import StatCard from "../components/StatCard";
 import ListCard from "../components/ListCard";
 import { MapPin, Star, Users, Calendar } from "lucide-react";
 import FilterSidebar from "../components/FilterSidebar";
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // Type for filters
 type Filters = {
@@ -13,7 +13,7 @@ type Filters = {
     minCollaborators: number;
     createdAfter: string;
     createdBefore: string;
-};  
+};
 
 // Stats section
 const stats = [
@@ -104,6 +104,12 @@ const Home: React.FC = () => {
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"my" | "shared">("my");
     const [filters, setFilters] = useState<Filters | null>(null);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
+
+
+
 
     const applyAllFilters = (list: any) => {
         const passSearch = list.title.toLowerCase().includes(search.toLowerCase());
@@ -118,6 +124,17 @@ const Home: React.FC = () => {
 
     const filteredLists =
         (activeTab === "my" ? initialMyLists : initialSharedLists).filter(applyAllFilters);
+
+    const handleCreateClick = () => {
+        const user = localStorage.getItem("user");
+
+        if (!user) {
+            // login səhifəsinə yönləndir, əvvəlki yol olaraq /create göndər
+            navigate("/auth/login", { state: { from: { pathname: "/create" } } });
+        } else {
+            navigate("/create");
+        }
+    };
 
     return (
         <>
@@ -138,9 +155,13 @@ const Home: React.FC = () => {
                                 Ready for your next adventure?
                             </p>
                         </div>
-                        <Link to={"/create"} className="px-5 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-md hover:opacity-90 transition">
+                        <button
+                            onClick={handleCreateClick}
+                            className="px-5 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-md hover:opacity-90 transition"
+                        >
                             + Create New List
-                        </Link>
+                        </button>
+
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
