@@ -1,4 +1,4 @@
-const TravelList = require('../models/TravelLIstModel');
+const TravelList = require('../models/TravelListModel');
 const mongoose = require('mongoose');
 
 // Helper function
