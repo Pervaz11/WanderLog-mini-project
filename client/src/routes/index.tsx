@@ -1,4 +1,6 @@
 import { type RouteObject } from "react-router-dom";
+import ProtectedRoute from "../components/ProtectedRoute"; // import et
+
 
 // Layouts
 import Layout from "../layouts/Layout";
@@ -27,7 +29,14 @@ const routes: RouteObject[] = [
             { path: "my-lists", element: <MyLists /> },
             { path: "journal", element: <Journal /> },
             { path: "explore", element: <Explore /> },
-            { path: "create", element: <CreateList /> },
+            {
+                path: "create",
+                element: (
+                    <ProtectedRoute>
+                        <CreateList />
+                    </ProtectedRoute>
+                ),
+            },
         ],
     },
 
@@ -35,26 +44,8 @@ const routes: RouteObject[] = [
         path: "/auth",
         element: <AuthLayout />,
         children: [
-            {
-                path: "login",
-                element: <Login />,
-            },
-            {
-                path: "register",
-                element: <Register />,
-            },
-            // {
-            //     path: "forgot-password",
-            //     element: <ForgotPassword />,
-            // },
-            // {
-            //     path: "reset-password/:token",
-            //     element: <ResetPassword />,
-            // },
-            // {
-            //     path: "success/:token",
-            //     element: <AuthCallback />,
-            // },
+            { path: "login", element: <Login /> },
+            { path: "register", element: <Register /> },
         ],
     },
 ];

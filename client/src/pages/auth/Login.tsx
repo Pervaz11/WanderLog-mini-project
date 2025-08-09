@@ -22,13 +22,11 @@ const LoginPage = () => {
                 password,
             });
 
-            // Token və istifadəçi məlumatını yadda saxla
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
 
             enqueueSnackbar("Login successful!", { variant: "success" });
 
-            // Ana səhifəyə yönləndir
             navigate("/");
         } catch (err: any) {
             enqueueSnackbar(
