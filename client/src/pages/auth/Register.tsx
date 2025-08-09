@@ -1,16 +1,15 @@
-// src/pages/auth/Register.tsx
-
 import { useState } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Github } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-import { enqueueSnackbar } from "notistack";
-import { registerValidationSchema  } from "../../validations/registerValidation";
+import { useSnackbar } from "notistack";
+import { registerValidationSchema } from "../../validations/registerValidation";
 import Aurora from "../../components/ui/Aurora";
 
 const RegisterPage = () => {
     const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
@@ -26,7 +25,7 @@ const RegisterPage = () => {
         onSubmit: async (values, actions) => {
             try {
                 const { confirmPassword, ...userData } = values;
-                await axios.post("http://localhost:5050/auth/register", userData);
+                await axios.post("http://localhost:3000/auth/register", userData);
                 actions.resetForm();
                 enqueueSnackbar("Registered successfully! Check your email.", {
                     variant: "success",
@@ -72,12 +71,11 @@ const RegisterPage = () => {
                                 value={formik.values.fullName}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Enter your full name"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
                             />
                             {formik.touched.fullName && formik.errors.fullName && (
-                                <span className="text-sm text-red-500">
-                                    {formik.errors.fullName}
-                                </span>
+                                <span className="text-sm text-red-500">{formik.errors.fullName}</span>
                             )}
                         </div>
 
@@ -90,12 +88,11 @@ const RegisterPage = () => {
                                 value={formik.values.username}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Choose a username"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none  text-black placeholder:text-gray-800"
                             />
                             {formik.touched.username && formik.errors.username && (
-                                <span className="text-sm text-red-500">
-                                    {formik.errors.username}
-                                </span>
+                                <span className="text-sm text-red-500">{formik.errors.username}</span>
                             )}
                         </div>
 
@@ -108,12 +105,11 @@ const RegisterPage = () => {
                                 value={formik.values.email}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Enter your email"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none  text-black placeholder:text-gray-800"
                             />
                             {formik.touched.email && formik.errors.email && (
-                                <span className="text-sm text-red-500">
-                                    {formik.errors.email}
-                                </span>
+                                <span className="text-sm text-red-500">{formik.errors.email}</span>
                             )}
                         </div>
 
@@ -126,7 +122,8 @@ const RegisterPage = () => {
                                 value={formik.values.password}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Enter your password"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
                             />
                             <div
                                 className="absolute right-3 top-9 cursor-pointer"
@@ -135,24 +132,21 @@ const RegisterPage = () => {
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </div>
                             {formik.touched.password && formik.errors.password && (
-                                <span className="text-sm text-red-500">
-                                    {formik.errors.password}
-                                </span>
+                                <span className="text-sm text-red-500">{formik.errors.password}</span>
                             )}
                         </div>
 
                         {/* Confirm Password */}
                         <div className="relative">
-                            <label className="block mb-1 text-gray-600">
-                                Confirm Password
-                            </label>
+                            <label className="block mb-1 text-gray-600">Confirm Password</label>
                             <input
                                 type={showConfirm ? "text" : "password"}
                                 name="confirmPassword"
                                 value={formik.values.confirmPassword}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="Confirm your password"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
                             />
                             <div
                                 className="absolute right-3 top-9 cursor-pointer"
@@ -160,12 +154,9 @@ const RegisterPage = () => {
                             >
                                 {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
                             </div>
-                            {formik.touched.confirmPassword &&
-                                formik.errors.confirmPassword && (
-                                    <span className="text-sm text-red-500">
-                                        {formik.errors.confirmPassword}
-                                    </span>
-                                )}
+                            {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+                                <span className="text-sm text-red-500">{formik.errors.confirmPassword}</span>
+                            )}
                         </div>
 
                         {/* Submit Button */}
@@ -184,10 +175,7 @@ const RegisterPage = () => {
 
                     <p className="mt-6 text-center text-sm text-gray-500">
                         Already have an account?{" "}
-                        <a
-                            href="/auth/login"
-                            className="text-blue-600 hover:underline font-medium"
-                        >
+                        <a href="/auth/login" className="text-blue-600 hover:underline font-medium">
                             Login
                         </a>
                     </p>

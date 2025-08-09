@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-const userSchema = new Schema({
+const UserSchema = new Schema({
     fullName: { type: String, required: true },
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
@@ -10,4 +11,4 @@ const userSchema = new Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = UserSchema; // ✅ Yalnız schema export et
