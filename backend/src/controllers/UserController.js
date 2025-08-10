@@ -1,22 +1,19 @@
-const User = require('../models/userModel');
+const User = require('../schemas/UserSchema');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Register user
+// Register user (local)
 exports.register = async (req, res) => {
   try {
     const { fullName, username, email, password } = req.body;
 
-    // Check if email or username already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return res.status(400).json({ message: 'Username or email already exists' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     const newUser = new User({
       fullName,
       username,
@@ -32,20 +29,21 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login user
+// Login user (local)
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid email or password' });
 
-    // Compare password
+    if (!user.password) {
+      return res.status(400).json({ message: 'Please login with OAuth provider' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
 
-    // Create JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -58,7 +56,12 @@ exports.login = async (req, res) => {
   }
 };
 
-// Get all users
+// OAuth success handler
+exports.oauthSuccess = (req, res) => {
+  res.json({ message: 'OAuth login successful', user: req.user });
+};
+
+// CRUD handlers
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password');
@@ -68,7 +71,6 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Get single user
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -79,13 +81,11 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Update user
 exports.updateUser = async (req, res) => {
   try {
     const { fullName, username, email, password, profileImage } = req.body;
     const updateData = { fullName, username, email, profileImage };
 
-    // Hash password if changed
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
@@ -104,7 +104,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// Delete user
 exports.deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
