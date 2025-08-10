@@ -1,4 +1,4 @@
-const UserModel = require("../models/userModel.js");
+const UserModel = require("../schemas/UserSchema.js");
 const {
     verifyAccessToken,
     generateAccessToken,
@@ -12,7 +12,7 @@ const {
 const { CLIENT_URL } = require("../config/config");
 
 const MAX_ATTEMPTS = 3;
-const LOCK_TIME = 10 * 60 * 1000; //10 minutes
+const LOCK_TIME = 10 * 60 * 1000;
 
 const getAll = async () => await UserModel.find().select("-password");
 
