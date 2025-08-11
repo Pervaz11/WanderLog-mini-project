@@ -16,6 +16,7 @@ import CreateList from "../pages/CreateList";
 // // Auth Pages
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import ForgotPasswordPage from "../pages/auth/ForgotPassword";
 // import ForgotPassword from "../pages/auth/ForgotPassword";
 // import ResetPassword from "../pages/auth/ResetPassword";
 // import AuthCallback from "../pages/auth/AuthCallabck";
@@ -46,6 +47,7 @@ const routes: RouteObject[] = [
         children: [
             { path: "login", element: <Login /> },
             { path: "register", element: <Register /> },
+            { path: "password", element: <ForgotPasswordPage /> },
         ],
     },
 ];

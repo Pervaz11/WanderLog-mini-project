@@ -90,7 +90,18 @@ const LoginPage = () => {
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </div>
+
+                                {/* Forgot password button */}
+                                <div className="mt-2 text-right">
+                                    <Link
+                                        to="/auth/password"
+                                        className="inline-block text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition duration-200 ease-in-out"
+                                    >
+                                        Forgot Password?
+                                    </Link>
+                                </div>
                             </div>
+
 
                             <button
                                 type="submit"
