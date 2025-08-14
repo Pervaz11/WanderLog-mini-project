@@ -18,6 +18,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPasswordPage from "../pages/auth/ForgotPassword";
 import AuthCallback from "../pages/auth/Success";
+import ProfilePage from "../pages/Profile";
 
 
 const routes: RouteObject[] = [
@@ -34,6 +35,15 @@ const routes: RouteObject[] = [
                 element: (
                     <ProtectedRoute>
                         <CreateList />
+                    </ProtectedRoute>
+                ),
+            },
+
+            {
+                path: "profile",
+                element: (
+                    <ProtectedRoute>
+                        <ProfilePage />
                     </ProtectedRoute>
                 ),
             },
