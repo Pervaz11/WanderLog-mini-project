@@ -11,10 +11,17 @@ const Navbar: React.FC = () => {
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        if (storedUser) setUser(JSON.parse(storedUser));
+
+        const handleStorageChange = () => {
+            const updatedUser = localStorage.getItem("user");
+            setUser(updatedUser ? JSON.parse(updatedUser) : null);
+        };
+
+        window.addEventListener("storage", handleStorageChange);
+        return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
+
 
     const handleLogout = () => {
         localStorage.removeItem("user");

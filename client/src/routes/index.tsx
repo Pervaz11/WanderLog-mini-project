@@ -13,13 +13,12 @@ import { MyLists } from "../pages/MyLists";
 import { Journal } from "../pages/Journal";
 import CreateList from "../pages/CreateList";
 
-// // Auth Pages
+// Auth Pages
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPasswordPage from "../pages/auth/ForgotPassword";
-// import ForgotPassword from "../pages/auth/ForgotPassword";
-// import ResetPassword from "../pages/auth/ResetPassword";
-// import AuthCallback from "../pages/auth/AuthCallabck";
+import AuthCallback from "../pages/auth/Success";
+
 
 const routes: RouteObject[] = [
     {
@@ -48,6 +47,10 @@ const routes: RouteObject[] = [
             { path: "login", element: <Login /> },
             { path: "register", element: <Register /> },
             { path: "password", element: <ForgotPasswordPage /> },
+            {
+                path: "/auth/callback",
+                element: <AuthCallback />
+            }
         ],
     },
 ];

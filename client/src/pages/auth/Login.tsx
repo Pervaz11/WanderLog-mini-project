@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Github } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,6 +13,23 @@ const LoginPage = () => {
 
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        const user = params.get("user");
+
+        if (token) {
+            localStorage.setItem("token", token);
+            if (user) {
+                try {
+                    localStorage.setItem("user", user);
+                } catch { }
+            }
+            enqueueSnackbar("Login successful!", { variant: "success" });
+            navigate("/");
+        }
+    }, [navigate, enqueueSnackbar]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,6 +65,7 @@ const LoginPage = () => {
                         speed={0.5}
                     />
                 </div>
+
 
                 {/* Login form container */}
                 <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
@@ -102,7 +120,6 @@ const LoginPage = () => {
                                 </div>
                             </div>
 
-
                             <button
                                 type="submit"
                                 className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition font-semibold"
@@ -118,7 +135,10 @@ const LoginPage = () => {
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            <button className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
+                            <a
+                                href="http://localhost:3000/auth/google"
+                                className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     x="0px"
@@ -144,12 +164,15 @@ const LoginPage = () => {
                                     ></path>
                                 </svg>
                                 Continue with Google
-                            </button>
+                            </a>
 
-                            <button className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium">
+                            <a
+                                href="http://localhost:3000/auth/github"
+                                className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
+                            >
                                 <Github className="w-5 h-5" />
                                 Continue with GitHub
-                            </button>
+                            </a>
                         </div>
 
                         <p className="mt-6 text-center text-sm text-gray-500">

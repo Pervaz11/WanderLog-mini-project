@@ -1,29 +1,32 @@
-const TravelList = require('../models/TravelListModel');
-const mongoose = require('mongoose');
+const TravelList = require("../models/TravelListModel");
 
-// Helper function
-const parseIntOrDefault = (value, defaultValue) =>
-    isNaN(parseInt(value)) ? defaultValue : parseInt(value);
+// CREATE
+const createTravelList = async (req, res, next) => {
+    try {
+        const newTravelList = new TravelList({
+            ...req.body,
+            owner: req.user.id 
+        });
 
-// GET /travel-lists
+        const savedTravelList = await newTravelList.save();
+        res.status(201).json(savedTravelList);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// GET all (pagination + search)
 const getTravelLists = async (req, res, next) => {
     try {
-        const {
-            search = '',
-            sortBy = 'createdAt',
-            order = 'asc',
-            page = '1',
-            limit = '10',
-        } = req.query;
+        const { search = "", sortBy = "createdAt", order = "asc", page = "1", limit = "10" } = req.query;
 
-        const pageNumber = parseIntOrDefault(page, 1);
-        const pageSize = parseIntOrDefault(limit, 10);
-        const sortOrder = order === 'desc' ? -1 : 1;
+        const pageNumber = parseInt(page) || 1;
+        const pageSize = parseInt(limit) || 10;
+        const sortOrder = order === "desc" ? -1 : 1;
 
         const filter = {};
-
         if (search.trim()) {
-            filter.title = { $regex: search.trim(), $options: 'i' };
+            filter.title = { $regex: search.trim(), $options: "i" };
         }
 
         const total = await TravelList.countDocuments(filter);
@@ -46,22 +49,9 @@ const getTravelLists = async (req, res, next) => {
 const getTravelListById = async (req, res, next) => {
     try {
         const travelList = await TravelList.findById(req.params.id);
-        if (!travelList) {
-            res.status(404).json({ message: 'Travel list not found' });
-            return;
-        }
+        if (!travelList) return res.status(404).json({ message: "Travel list not found" });
 
         res.status(200).json(travelList);
-    } catch (error) {
-        next(error);
-    }
-};
-
-const createTravelList = async (req, res, next) => {
-    try {
-        const newTravelList = new TravelList(req.body);
-        const savedTravelList = await newTravelList.save();
-        res.status(201).json(savedTravelList);
     } catch (error) {
         next(error);
     }
@@ -70,12 +60,9 @@ const createTravelList = async (req, res, next) => {
 const deleteTravelList = async (req, res, next) => {
     try {
         const deleted = await TravelList.findByIdAndDelete(req.params.id);
-        if (!deleted) {
-            res.status(404).json({ message: 'Travel list not found' });
-            return;
-        }
+        if (!deleted) return res.status(404).json({ message: "Travel list not found" });
 
-        res.status(200).json({ message: 'Deleted successfully' });
+        res.status(200).json({ message: "Deleted successfully" });
     } catch (error) {
         next(error);
     }
@@ -89,10 +76,7 @@ const updateTravelList = async (req, res, next) => {
             overwrite: true,
         });
 
-        if (!updated) {
-            res.status(404).json({ message: 'Travel list not found' });
-            return;
-        }
+        if (!updated) return res.status(404).json({ message: "Travel list not found" });
 
         res.status(200).json(updated);
     } catch (error) {
@@ -107,10 +91,7 @@ const patchTravelList = async (req, res, next) => {
             runValidators: true,
         });
 
-        if (!patched) {
-            res.status(404).json({ message: 'Travel list not found' });
-            return;
-        }
+        if (!patched) return res.status(404).json({ message: "Travel list not found" });
 
         res.status(200).json(patched);
     } catch (error) {

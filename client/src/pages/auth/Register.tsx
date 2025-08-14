@@ -25,7 +25,7 @@ const RegisterPage = () => {
         onSubmit: async (values, actions) => {
             try {
                 const { confirmPassword, ...userData } = values;
-                await axios.post("http://localhost:5173/auth/register", userData);
+                await axios.post("http://localhost:3000/auth/register", userData);
                 actions.resetForm();
                 enqueueSnackbar("Registered successfully! Check your email.", {
                     variant: "success",
