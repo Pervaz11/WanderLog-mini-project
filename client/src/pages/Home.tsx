@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import StatCard from "../components/StatCard";
 import ListCard from "../components/ListCard";
 import { MapPin, Star, Users, Calendar } from "lucide-react";
 import FilterSidebar from "../components/FilterSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Type for filters
 type Filters = {
@@ -47,89 +48,70 @@ const stats = [
     },
 ];
 
-// Lists
-const initialMyLists = [
-    {
-        title: "European Adventure 2024",
-        description:
-            "Exploring the historic cities and beautiful landscapes of Europe",
-        isPublic: true,
-        isNew: true,
-        completed: 3,
-        total: 8,
-        tags: ["culture", "history", "food"],
-        collaborators: 2,
-        createdAt: "1/15/2024",
-    },
-    {
-        title: "European Adventure 2024",
-        description:
-            "Exploring the historic cities and beautiful landscapes of Europe",
-        isPublic: true,
-        isNew: true,
-        completed: 3,
-        total: 8,
-        tags: ["culture", "history", "food"],
-        collaborators: 2,
-        createdAt: "1/15/2024",
-    },
-];
-
-const initialSharedLists = [
-    {
-        title: "California Road Trip",
-        description: "Epic coastal drive from San Francisco to Los Angeles",
-        isPublic: false,
-        isNew: true,
-        completed: 7,
-        total: 10,
-        tags: ["roadtrip", "coastal", "adventure"],
-        collaborators: 1,
-        createdAt: "7/10/2024",
-    },
-    {
-        title: "Nordic Winter Wonderland",
-        description: "Chasing Northern Lights in Iceland, Norway, and Finland",
-        isPublic: false,
-        isNew: false,
-        completed: 2,
-        total: 8,
-        tags: ["winter", "northernlights", "nature"],
-        collaborators: 0,
-        createdAt: "6/5/2024",
-    },
-];
-
 const Home: React.FC = () => {
     const [search, setSearch] = useState("");
     const [activeTab, setActiveTab] = useState<"my" | "shared">("my");
     const [filters, setFilters] = useState<Filters | null>(null);
+    const [myLists, setMyLists] = useState<any[]>([]);
+    const [sharedLists, setSharedLists] = useState<any[]>([]);
     const navigate = useNavigate();
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
 
+    // 🔹 LocalStorage-dan user məlumatını oxumaq
+    const userData = localStorage.getItem("user");
+    const userId = userData ? JSON.parse(userData)._id : null;
+    const username = userData ? JSON.parse(userData).username : "Guest";
 
+    // Backend-dən travel listləri çəkmək
+    useEffect(() => {
+        const fetchLists = async () => {
+            try {
+                const res = await axios.get("http://localhost:5000/api/lists");
+                const allLists = res.data.travelLists;
 
+                if (userId) {
+                    setMyLists(allLists.filter((list: any) => list.owner === userId));
+                    setSharedLists(allLists.filter((list: any) => list.collaborators?.includes(userId)));
+                } else {
+                    setMyLists([]);
+                    setSharedLists([]);
+                }
+            } catch (err) {
+                console.error("Error fetching travel lists:", err);
+            }
+        };
+        fetchLists();
+    }, [userId]);
 
     const applyAllFilters = (list: any) => {
         const passSearch = list.title.toLowerCase().includes(search.toLowerCase());
-        const passTags = !filters?.tags?.length || filters.tags.every(tag => list.tags.includes(tag));
-        const passCompleted = !filters?.completedOnly || list.completed === list.total;
-        const passCollaborators = filters?.minCollaborators == null || list.collaborators >= filters.minCollaborators;
-        const passCreatedAfter = !filters?.createdAfter || new Date(list.createdAt) >= new Date(filters.createdAfter);
-        const passCreatedBefore = !filters?.createdBefore || new Date(list.createdAt) <= new Date(filters.createdBefore);
+        const passTags =
+            !filters?.tags?.length || filters.tags.every(tag => list.tags.includes(tag));
+        const passCompleted =
+            !filters?.completedOnly || list.completed === list.destinations.length;
+        const passCollaborators =
+            filters?.minCollaborators == null || (list.collaborators?.length || 0) >= filters.minCollaborators;
+        const passCreatedAfter =
+            !filters?.createdAfter || new Date(list.createdAt) >= new Date(filters.createdAfter);
+        const passCreatedBefore =
+            !filters?.createdBefore || new Date(list.createdAt) <= new Date(filters.createdBefore);
 
-        return passSearch && passTags && passCompleted && passCollaborators && passCreatedAfter && passCreatedBefore;
+        return (
+            passSearch &&
+            passTags &&
+            passCompleted &&
+            passCollaborators &&
+            passCreatedAfter &&
+            passCreatedBefore
+        );
     };
 
     const filteredLists =
-        (activeTab === "my" ? initialMyLists : initialSharedLists).filter(applyAllFilters);
+        (activeTab === "my" ? myLists : sharedLists).filter(applyAllFilters);
 
     const handleCreateClick = () => {
-        const user = localStorage.getItem("user");
-
-        if (!user) {
-            // login səhifəsinə yönləndir, əvvəlki yol olaraq /create göndər
+        if (!userId) {
             navigate("/auth/login", { state: { from: { pathname: "/create" } } });
         } else {
             navigate("/create");
@@ -149,11 +131,9 @@ const Home: React.FC = () => {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-                                Welcome back, John! 👋
+                                Welcome back, {username}! 👋
                             </h1>
-                            <p className="text-gray-600 mt-1">
-                                Ready for your next adventure?
-                            </p>
+                            <p className="text-gray-600 mt-1">Ready for your next adventure?</p>
                         </div>
                         <button
                             onClick={handleCreateClick}
@@ -161,7 +141,6 @@ const Home: React.FC = () => {
                         >
                             + Create New List
                         </button>
-
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -196,23 +175,22 @@ const Home: React.FC = () => {
                     <button
                         onClick={() => setActiveTab("my")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "my"
-                            ? "bg-black text-white"
-                            : "text-gray-600 hover:bg-gray-100"
+                                ? "bg-black text-white"
+                                : "text-gray-600 hover:bg-gray-100"
                             }`}
                     >
-                        My Lists ({initialMyLists.filter(applyAllFilters).length})
+                        My Lists ({myLists.filter(applyAllFilters).length})
                     </button>
                     <button
                         onClick={() => setActiveTab("shared")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "shared"
-                            ? "bg-black text-white"
-                            : "text-gray-600 hover:bg-gray-100"
+                                ? "bg-black text-white"
+                                : "text-gray-600 hover:bg-gray-100"
                             }`}
                     >
-                        Shared with Me ({initialSharedLists.filter(applyAllFilters).length})
+                        Shared with Me ({sharedLists.filter(applyAllFilters).length})
                     </button>
                 </div>
-
 
                 {/* Cards */}
                 <AnimatePresence mode="wait">
@@ -224,8 +202,8 @@ const Home: React.FC = () => {
                         transition={{ duration: 0.4 }}
                         className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                     >
-                        {filteredLists.map((item, idx) => (
-                            <ListCard key={idx} {...item} />
+                        {filteredLists.map((item) => (
+                            <ListCard key={item._id} {...item} />
                         ))}
                     </motion.div>
                 </AnimatePresence>

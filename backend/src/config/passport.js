@@ -20,7 +20,7 @@ passport.deserializeUser(async (id, done) => {
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/callback"  // <-- DİQQƏT: burada 3000 portu
+    callbackURL: "http://localhost:3000/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails?.[0]?.value;
@@ -42,11 +42,10 @@ passport.use(new GoogleStrategy({
     }
 }));
 
-// GitHub OAuth (əgər istəsən buranı da 3000 portuna uyğunlaşdır)
 passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/github/callback"  // 3000 portu
+    callbackURL: "http://localhost:3000/auth/github/callback"
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails?.[0]?.value || `${profile.username}@github.com`;

@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const TravelListController = require('../controllers/TravelListController');
+const travelListController = require("../controllers/travelListController");
+const auth = require("../middlewares/authMiddleware");
 
-router.get('/', TravelListController.getTravelLists);
-router.get('/:id', TravelListController.getTravelListById);
-router.post('/', TravelListController.createTravelList);
-router.delete('/:id', TravelListController.deleteTravelList);
-router.put('/:id', TravelListController.updateTravelList);
-router.patch('/:id', TravelListController.patchTravelList);
+router.get("/", travelListController.getTravelLists);
+router.get("/:id", travelListController.getTravelListById);
+router.post("/", auth, travelListController.createTravelList);
+router.patch("/:id", auth, travelListController.patchTravelList);
+router.delete("/:id", auth, travelListController.deleteTravelList);
 
 module.exports = router;
