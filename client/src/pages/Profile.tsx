@@ -1,152 +1,118 @@
-import { Edit3, Mail, MapPin, Calendar, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { Camera } from "lucide-react";
 
-export default function ProfilePage() {
-    const [editing, setEditing] = useState(false);
-    const [name, setName] = useState("John Doe");
-    const [username, setUsername] = useState("@john_doe");
-    const [email, setEmail] = useState("john@example.com");
-    const [location, setLocation] = useState("New York, USA");
-    const [bio, setBio] = useState(
-        "Passionate developer with a love for creating beautiful and functional web applications."
-    );
+const ProfilePage: React.FC = () => {
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setProfileImage(parsedUser.profileImage || null);
+        }
+    }, []);
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Preview
+        setProfileImage(URL.createObjectURL(file));
+
+        const formData = new FormData();
+        formData.append("profileImage", file);
+
+        try {
+            const res = await fetch("http://localhost:5000/api/user/upload", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            const data = await res.json();
+            if (res.ok && data.user) {
+                const newImageUrl = `http://localhost:5000${data.user.profileImage}`;
+                setProfileImage(newImageUrl);
+
+                const storedUser = localStorage.getItem("user");
+                if (storedUser) {
+                    const parsedUser = JSON.parse(storedUser);
+                    parsedUser.profileImage = newImageUrl;
+                    localStorage.setItem("user", JSON.stringify(parsedUser));
+                }
+
+                window.dispatchEvent(new Event("storage"));
+            }
+        } catch (err) {
+            console.error("Image upload error:", err);
+        }
+    };
+
+    if (!user) return <p className="text-center mt-10">Loading profile...</p>;
 
     return (
-        <div className="min-h-screen flex justify-center py-10 px-4">
+        <section className="relative flex p-10 justify-center">
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="rounded-2xl w-full max-w-5xl p-6 grid grid-cols-1 md:grid-cols-3 gap-8"
+                transition={{ duration: 0.6 }}
+                className="rounded-2xl p-8 w-full max-w-lg"
             >
-                {/* Left Column - Profile Photo & Stats */}
-                <div className="flex flex-col items-center">
+                {/* Avatar */}
+                <div className="flex flex-col items-center mb-6">
                     <div className="relative group">
-                        <motion.img
-                            whileHover={{ scale: 1.02 }}
-                            src="https://i.pravatar.cc/150?img=32"
+                        <img
+                            src={profileImage || "/default-avatar.png"}
                             alt="Profile"
-                            className="w-40 h-40 rounded-full border-4 border-white shadow-md object-cover"
+                            className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-md transition-transform duration-300 group-hover:scale-105"
                         />
-                        <motion.button
-                            initial={{ opacity: 0 }}
-                            whileHover={{ opacity: 1 }}
-                            className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow transition"
+                        <label
+                            htmlFor="profile-upload"
+                            className="absolute bottom-2 right-2 bg-blue-600 text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-blue-700 transition"
                         >
                             <Camera size={18} />
-                        </motion.button>
+                        </label>
+                        <input
+                            id="profile-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageChange}
+                        />
                     </div>
-                    <h2 className="text-2xl font-bold mt-4">{name}</h2>
-                    <p className="text-gray-500">{username}</p>
-
-                    {/* Stats */}
-                    <div className="mt-6 grid grid-cols-3 gap-4 text-center w-full">
-                        {[
-                            { label: "Posts", value: 120 },
-                            { label: "Followers", value: "4.8k" },
-                            { label: "Following", value: 530 },
-                        ].map((stat, idx) => (
-                            <motion.div
-                                key={idx}
-                                whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}
-                                className="bg-gray-50 rounded-xl p-3 shadow-sm hover:bg-white transition cursor-pointer"
-                            >
-                                <p className="text-lg font-semibold">{stat.value}</p>
-                                <p className="text-gray-500 text-sm">{stat.label}</p>
-                            </motion.div>
-                        ))}
-                    </div>
+                    <h2 className="mt-4 text-2xl font-bold text-gray-800">{user.fullName}</h2>
+                    <p className="text-gray-500">@{user.username}</p>
                 </div>
 
-                {/* Right Column - Info */}
-                <div className="md:col-span-2 space-y-6">
-                    {/* Header */}
-                    <div className="flex justify-between items-center border-b pb-4">
-                        <h3 className="text-xl font-semibold">Profile Information</h3>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setEditing(!editing)}
-                            className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 text-white px-4 py-2 rounded-full shadow-lg"
-                        >
-                            <Edit3 size={18} /> {editing ? "Save" : "Edit"}
-                        </motion.button>
+                {/* User Info */}
+                <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition flex justify-between">
+                        <span className="font-medium text-gray-600">Email</span>
+                        <span className="text-gray-800">{user.email}</span>
                     </div>
-
-                    {/* Info Fields */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-gray-700">
-                            <Mail size={18} className="text-blue-600" />
-                            {editing ? (
-                                <input
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="border rounded px-3 py-1 w-full"
-                                />
-                            ) : (
-                                <span>{email}</span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-3 text-gray-700">
-                            <MapPin size={18} className="text-blue-600" />
-                            {editing ? (
-                                <input
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    className="border rounded px-3 py-1 w-full"
-                                />
-                            ) : (
-                                <span>{location}</span>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-3 text-gray-700">
-                            <Calendar size={18} className="text-blue-600" /> Joined: Jan 2024
-                        </div>
+                    <div className="p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition flex justify-between">
+                        <span className="font-medium text-gray-600">Created At</span>
+                        <span className="text-gray-800">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                        </span>
                     </div>
-
-                    {/* Bio */}
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2">About Me</h3>
-                        {editing ? (
-                            <textarea
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                className="border rounded px-3 py-2 w-full"
-                                rows={4}
-                            />
-                        ) : (
-                            <p className="text-gray-600 leading-relaxed">{bio}</p>
-                        )}
-                    </div>
-
-                    {/* Password Change */}
-                    {editing && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <h3 className="font-semibold text-lg mb-2">Change Password</h3>
-                            <input
-                                type="password"
-                                placeholder="Current Password"
-                                className="border rounded px-3 py-2 w-full mb-2"
-                            />
-                            <input
-                                type="password"
-                                placeholder="New Password"
-                                className="border rounded px-3 py-2 w-full mb-2"
-                            />
-                            <input
-                                type="password"
-                                placeholder="Confirm New Password"
-                                className="border rounded px-3 py-2 w-full"
-                            />
-                        </motion.div>
+                    {user.lastLogin && (
+                        <div className="p-4 rounded-xl bg-gray-50 hover:bg-blue-50 transition flex justify-between">
+                            <span className="font-medium text-gray-600">Last Login</span>
+                            <span className="text-gray-800">
+                                {new Date(user.lastLogin).toLocaleString()}
+                            </span>
+                        </div>
                     )}
                 </div>
             </motion.div>
-        </div>
+        </section>
     );
-}
+};
+
+export default ProfilePage;
