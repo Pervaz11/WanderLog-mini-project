@@ -1,21 +1,38 @@
-const TravelList = require("../models/TravelListModel");
+const TravelList = require("../schemas/TravelListSchema");
 
-// CREATE
+// CREATE   
 const createTravelList = async (req, res, next) => {
     try {
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ message: "Unauthorized: User not found" });
+        }
+
+        let collaboratorIds = [];
+        if (req.body.collaborators && req.body.collaborators.length > 0) {
+            const users = await users.find({ email: { $in: req.body.collaborators } }).select("_id");
+            collaboratorIds = users.map(u => u._id);
+        }
+
         const newTravelList = new TravelList({
-            ...req.body,
-            owner: req.user.id 
+            title: req.body.title,
+            description: req.body.description,
+            tags: req.body.tags || [],
+            isPublic: req.body.isPublic ?? true,
+            collaborators: collaboratorIds,
+            coverImage: req.body.coverImage || "",
+            owner: req.user._id
         });
 
         const savedTravelList = await newTravelList.save();
         res.status(201).json(savedTravelList);
     } catch (error) {
+        console.error("CreateTravelList error:", error.message);
         next(error);
     }
 };
 
-// GET all (pagination + search)
+
+// GET all 
 const getTravelLists = async (req, res, next) => {
     try {
         const { search = "", sortBy = "createdAt", order = "asc", page = "1", limit = "10" } = req.query;
