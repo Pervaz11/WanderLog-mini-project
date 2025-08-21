@@ -4,8 +4,9 @@ import StatCard from "../components/StatCard";
 import ListCard from "../components/ListCard";
 import { MapPin, Star, Users, Calendar } from "lucide-react";
 import FilterSidebar from "../components/FilterSidebar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import ChatWidget from "./ChatWidget";
 
 // Type for filters
 type Filters = {
@@ -55,10 +56,7 @@ const Home: React.FC = () => {
     const [myLists, setMyLists] = useState<any[]>([]);
     const [sharedLists, setSharedLists] = useState<any[]>([]);
     const navigate = useNavigate();
-    const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
 
-    // 🔹 LocalStorage-dan user məlumatını oxumaq
     const userData = localStorage.getItem("user");
     const userId = userData ? JSON.parse(userData)._id : null;
     const username = userData ? JSON.parse(userData).username : "Guest";
@@ -67,7 +65,7 @@ const Home: React.FC = () => {
     useEffect(() => {
         const fetchLists = async () => {
             try {
-                const res = await axios.get("http://localhost:5000/api/lists");
+                const res = await axios.get("http://localhost:3000/api/travelLists");
                 const allLists = res.data.travelLists;
 
                 if (userId) {
@@ -120,8 +118,9 @@ const Home: React.FC = () => {
 
     return (
         <>
+
             {/* Hero Section */}
-            <section>
+            <section className="dark:bg-neutral-800 bg-white">
                 <motion.div
                     className="p-6"
                     initial={{ opacity: 0, y: 30 }}
@@ -130,10 +129,12 @@ const Home: React.FC = () => {
                 >
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                                 Welcome back, {username}! 👋
                             </h1>
-                            <p className="text-gray-600 mt-1">Ready for your next adventure?</p>
+                            <p className="text-gray-600 dark:text-gray-300 mt-1">
+                                Ready for your next adventure?
+                            </p>
                         </div>
                         <button
                             onClick={handleCreateClick}
@@ -152,15 +153,16 @@ const Home: React.FC = () => {
             </section>
 
             {/* Cards Section */}
-            <section className="px-6 mt-10 mb-20">
+
+            <section className="px-6 mt-10 mb-20 bg-white dark:bg-neutral-900">
                 {/* Search + Filter */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex da flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <input
                         type="text"
                         placeholder="Search your travel lists..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full shadow border border-gray-200 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full shadow border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="flex-shrink-0">
                         <FilterSidebar
@@ -175,8 +177,8 @@ const Home: React.FC = () => {
                     <button
                         onClick={() => setActiveTab("my")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "my"
-                                ? "bg-black text-white"
-                                : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-black text-white dark:bg-white dark:text-black"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
                             }`}
                     >
                         My Lists ({myLists.filter(applyAllFilters).length})
@@ -184,8 +186,8 @@ const Home: React.FC = () => {
                     <button
                         onClick={() => setActiveTab("shared")}
                         className={`px-4 py-1.5 text-sm font-medium rounded-md ${activeTab === "shared"
-                                ? "bg-black text-white"
-                                : "text-gray-600 hover:bg-gray-100"
+                            ? "bg-black text-white dark:bg-white dark:text-black"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700"
                             }`}
                     >
                         Shared with Me ({sharedLists.filter(applyAllFilters).length})
@@ -202,12 +204,23 @@ const Home: React.FC = () => {
                         transition={{ duration: 0.4 }}
                         className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                     >
-                        {filteredLists.map((item) => (
-                            <ListCard key={item._id} {...item} />
+                        {filteredLists.map((list) => (
+                            <ListCard
+                                key={list._id}
+                                title={list.title}
+                                description={list.description || "No description"}
+                                isPublic={list.isPublic}
+                                completed={0}
+                                total={0}
+                                tags={list.tags || []}
+                                collaborators={list.collaborators?.length || 0}
+                                createdAt={new Date(list.createdAt).toLocaleDateString()}
+                            />
                         ))}
                     </motion.div>
                 </AnimatePresence>
             </section>
+            <ChatWidget />
         </>
     );
 };

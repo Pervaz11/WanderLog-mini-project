@@ -1,51 +1,120 @@
 import { useState } from "react";
+import { GiMonkey } from "react-icons/gi";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { useFormik } from "formik";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import axios from "axios";
+import registerValidationSchema from "../../../validations/registerValidation";
 import { useSnackbar } from "notistack";
-import { registerValidationSchema } from "../../validations/registerValidation";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../../services/api";
+import { Link } from "react-router-dom";
 import Aurora from "../../components/ui/Aurora";
+import { motion } from "framer-motion";
 
-const RegisterPage = () => {
+const Register = () => {
+    const [preview, setPreview] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirm, setShowConfirm] = useState(false);
 
-    const formik = useFormik({
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (e.currentTarget.files && file) {
+            setPreview(URL.createObjectURL(file));
+            console.log("FILE: ", file);
+            formik.setFieldValue("file", e.currentTarget.files[0]);
+        }
+    };
+
+    const formik = useFormik<{
+        fullName: string;
+        username: string;
+        email: string;
+        phone: string;
+        file: File | null;
+        password: string;
+        confirmPassword: string;
+    }>({
         initialValues: {
             fullName: "",
             username: "",
             email: "",
+            phone: "",
+            file: null,
             password: "",
             confirmPassword: "",
         },
         validationSchema: registerValidationSchema,
         onSubmit: async (values, actions) => {
+            const formData = new FormData();
+            formData.append("fullName", values.fullName);
+            formData.append("username", values.username);
+            formData.append("email", values.email);
+            formData.append("password", values.password);
+            if (values.phone) {
+                formData.append("phoneNumber", values.phone);
+            }
+
+            if (values.file) {
+                formData.append("profileImage", values.file);
+            }
+
             try {
-                const { confirmPassword, ...userData } = values;
-                await axios.post("http://localhost:3000/auth/register", userData);
-                actions.resetForm();
-                enqueueSnackbar("Registered successfully! Check your email.", {
-                    variant: "success",
-                    autoHideDuration: 3000,
-                });
-                navigate("/auth/login");
-            } catch (error: any) {
-                enqueueSnackbar(
-                    error.response?.data?.message || "Registration failed",
+                const response = await axios.post(
+                    `${API_BASE_URL}/auth/register`,
+                    formData,
                     {
-                        variant: "error",
-                        autoHideDuration: 3000,
+                        headers: { "Content-Type": "multipart/form-data" },
                     }
                 );
+                console.log("response:", response);
+                actions.resetForm();
+                setPreview(null); // clear preview
+                enqueueSnackbar("registered successfully, verify your email!", {
+                    anchorOrigin: {
+                        vertical: "bottom",
+                        horizontal: "right",
+                    },
+                    autoHideDuration: 2000,
+                    variant: "success",
+                });
+                navigate("/login");
+            } catch (error) {
+                let message = "Registration failed";
+                if (
+                    typeof error === "object" &&
+                    error !== null &&
+                    "response" in error &&
+                    error.response &&
+                    typeof error.response === "object" &&
+                    "data" in error.response &&
+                    error.response.data &&
+                    typeof error.response.data === "object" &&
+                    "message" in error.response.data &&
+                    typeof error.response.data.message === "string"
+                ) {
+                    message = error.response.data.message;
+                }
+                enqueueSnackbar(message, {
+                    autoHideDuration: 2000,
+                    anchorOrigin: {
+                        vertical: "bottom",
+                        horizontal: "right",
+                    },
+                    variant: "error",
+                });
+                values.email = "";
+                values.username = "";
             }
         },
     });
 
+
     return (
-        <section className="relative w-full min-h-screen bg-gradient-to-r from-purple-100 to-blue-100 px-4">
+        <section className="relative w-full min-h-screen bg-gradient-to-r from-blue-50 to-purple-100">
+            {/* Aurora background */}
             <div className="absolute inset-0 z-0">
                 <Aurora
                     colorStops={["#7CFF67", "#B19EEF", "#6929FF"]}
@@ -55,191 +124,242 @@ const RegisterPage = () => {
                 />
             </div>
 
-            <div className="relative z-10 flex items-center justify-center min-h-screen">
-                <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+            {/* Register form container */}
+            <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-lg"
+                >
                     <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-                        Create Account
+                        Create Your Account
                     </h2>
 
-                    <form onSubmit={formik.handleSubmit} className="space-y-5">
+                    {/* Google Sign Up */}
+                    <button
+                        onClick={() => {
+                            window.location.href = `${API_BASE_URL}/auth/google`;
+                        }}
+                        className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-xl hover:bg-blue-50 transition mb-6"
+                    >
+                        <FcGoogle size={22} />
+                        <span className="text-sm font-medium text-gray-700">
+                            Sign up with Google
+                        </span>
+                    </button>
+
+                    {/* Divider */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="bg-white px-2 text-gray-500">
+                                or sign up with email
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Form */}
+                    <form
+                        onSubmit={formik.handleSubmit}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"
+                    >
                         {/* Full Name */}
                         <div>
-                            <label className="block mb-1 text-gray-600">Full Name</label>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Full Name
+                            </label>
                             <input
                                 type="text"
                                 name="fullName"
                                 value={formik.values.fullName}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                placeholder="Enter your full name"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                placeholder="Full name"
                             />
-                            {formik.touched.fullName && formik.errors.fullName && (
-                                <span className="text-sm text-red-500">{formik.errors.fullName}</span>
+                            {formik.errors.fullName && formik.touched.fullName && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.fullName}
+                                </span>
                             )}
                         </div>
 
                         {/* Username */}
                         <div>
-                            <label className="block mb-1 text-gray-600">Username</label>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Username
+                            </label>
                             <input
                                 type="text"
                                 name="username"
                                 value={formik.values.username}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                placeholder="Choose a username"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none  text-black placeholder:text-gray-800"
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                placeholder="Username"
                             />
-                            {formik.touched.username && formik.errors.username && (
-                                <span className="text-sm text-red-500">{formik.errors.username}</span>
+                            {formik.errors.username && formik.touched.username && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.username}
+                                </span>
                             )}
                         </div>
 
                         {/* Email */}
                         <div>
-                            <label className="block mb-1 text-gray-600">Email</label>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Email
+                            </label>
                             <input
                                 type="email"
                                 name="email"
                                 value={formik.values.email}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                placeholder="Enter your email"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none  text-black placeholder:text-gray-800"
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                placeholder="Email"
                             />
-                            {formik.touched.email && formik.errors.email && (
-                                <span className="text-sm text-red-500">{formik.errors.email}</span>
+                            {formik.errors.email && formik.touched.email && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.email}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Phone */}
+                        <div>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Phone <span className="text-gray-400 text-xs">(optional)</span>
+                            </label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={formik.values.phone}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                placeholder="(+994)-XX-XXX-XX-XX"
+                            />
+                            {formik.errors.phone && formik.touched.phone && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.phone}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Profile Image */}
+                        <div className="md:col-span-2">
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Profile Image{" "}
+                                <span className="text-gray-400 text-xs">(optional)</span>
+                            </label>
+                            <input
+                                type="file"
+                                name="file"
+                                onBlur={formik.handleBlur}
+                                onChange={handleImageChange}
+                                className="w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-4 file:border file:border-gray-300 file:rounded-lg file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                            />
+                            {formik.errors.file && formik.touched.file && (
+                                <span className="text-red-500 text-sm">{formik.errors.file}</span>
+                            )}
+                            {preview && (
+                                <img
+                                    src={preview}
+                                    alt="Preview"
+                                    className="mt-2 h-16 w-16 object-cover rounded-2xl border border-gray-300"
+                                />
                             )}
                         </div>
 
                         {/* Password */}
                         <div className="relative">
-                            <label className="block mb-1 text-gray-600">Password</label>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Password
+                            </label>
                             <input
                                 type={showPassword ? "text" : "password"}
                                 name="password"
                                 value={formik.values.password}
-                                onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                placeholder="Enter your password"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
+                                onChange={formik.handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-12"
+                                placeholder="••••••••"
                             />
-                            <div
-                                className="absolute right-3 top-9 cursor-pointer"
-                                onClick={() => setShowPassword(!showPassword)}
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                className="absolute right-3 top-9 text-xl text-gray-600 hover:text-gray-800 focus:outline-none"
+                                onClick={() => setShowPassword((prev: boolean) => !prev)}
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </div>
-                            {formik.touched.password && formik.errors.password && (
-                                <span className="text-sm text-red-500">{formik.errors.password}</span>
+                                {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                            </button>
+                            {formik.errors.password && formik.touched.password && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.password}
+                                </span>
                             )}
                         </div>
 
                         {/* Confirm Password */}
                         <div className="relative">
-                            <label className="block mb-1 text-gray-600">Confirm Password</label>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Confirm Password
+                            </label>
                             <input
-                                type={showConfirm ? "text" : "password"}
+                                type={showConfirmPassword ? "text" : "password"}
                                 name="confirmPassword"
                                 value={formik.values.confirmPassword}
-                                onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
-                                placeholder="Confirm your password"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:ring-2 focus:ring-blue-500 outline-none text-black placeholder:text-gray-800"
+                                onChange={formik.handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-12"
+                                placeholder="••••••••"
                             />
-                            <div
-                                className="absolute right-3 top-9 cursor-pointer"
-                                onClick={() => setShowConfirm(!showConfirm)}
+                            <button
+                                type="button"
+                                tabIndex={-1}
+                                className="absolute right-3 top-9 text-xl text-gray-600 hover:text-gray-800 focus:outline-none"
+                                onClick={() => setShowConfirmPassword((prev: boolean) => !prev)}
                             >
-                                {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
-                            </div>
-                            {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-                                <span className="text-sm text-red-500">{formik.errors.confirmPassword}</span>
-                            )}
+                                {showConfirmPassword ? <FaRegEye /> : <FaRegEyeSlash />}
+                            </button>
+                            {formik.errors.confirmPassword &&
+                                formik.touched.confirmPassword && (
+                                    <span className="text-red-500 text-sm">
+                                        {formik.errors.confirmPassword}
+                                    </span>
+                                )}
                         </div>
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={
-                                formik.isSubmitting ||
-                                !formik.dirty ||
-                                Object.keys(formik.errors).length > 0
-                            }
-                            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Register
-                        </button>
+                        {/* Register Button */}
+                        <div className="md:col-span-2">
+                            <button
+                                disabled={
+                                    formik.isSubmitting ||
+                                    !formik.dirty ||
+                                    Object.entries(formik.errors).length > 0
+                                }
+                                type="submit"
+                                className="w-full py-3 disabled:bg-blue-400 disabled:cursor-not-allowed cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition mt-2"
+                            >
+                                Register
+                            </button>
+                        </div>
                     </form>
 
-                    {/* OAuth Buttons */}
-                    <div className="flex items-center my-6">
-                        <div className="flex-grow h-px bg-gray-300" />
-                        <span className="mx-3 text-gray-500">or</span>
-                        <div className="flex-grow h-px bg-gray-300" />
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <a
-                            href="http://localhost:3000/auth/google"
-                            className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                x="0px"
-                                y="0px"
-                                width="22"
-                                viewBox="0 0 48 48"
-                            >
-                                <path
-                                    fill="#FFC107"
-                                    d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-                                ></path>
-                                <path
-                                    fill="#FF3D00"
-                                    d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-                                ></path>
-                                <path
-                                    fill="#4CAF50"
-                                    d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-                                ></path>
-                                <path
-                                    fill="#1976D2"
-                                    d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-                                ></path>
-                            </svg>
-                            Continue with Google
-                        </a>
-
-                        <a
-                            href="http://localhost:3000/auth/github"
-                            className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
-                        >
-                            {/* Github Icon from lucide-react can be replaced with SVG if needed */}
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="w-5 h-5"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                                stroke="none"
-                            >
-                                <path d="M12 0C5.372 0 0 5.372 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.26.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.388-1.333-1.756-1.333-1.756-1.09-.745.083-.729.083-.729 1.205.085 1.838 1.237 1.838 1.237 1.07 1.834 2.807 1.304 3.492.997.108-.774.418-1.304.76-1.605-2.665-.3-5.466-1.334-5.466-5.933 0-1.31.467-2.381 1.235-3.222-.124-.303-.535-1.523.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.29-1.552 3.296-1.23 3.296-1.23.654 1.653.244 2.873.12 3.176.77.84 1.233 1.911 1.233 3.222 0 4.61-2.803 5.63-5.475 5.922.43.372.823 1.103.823 2.222v3.293c0 .32.218.694.825.576C20.565 21.796 24 17.298 24 12c0-6.628-5.372-12-12-12z" />
-                            </svg>
-                            Continue with GitHub
-                        </a>
-                    </div>
-
-                    <p className="mt-6 text-center text-sm text-gray-500">
+                    <p className="text-center text-sm text-gray-500 mt-6">
                         Already have an account?{" "}
-                        <a href="/auth/login" className="text-blue-600 hover:underline font-medium">
+                        <Link to="/auth/login" className="text-blue-600 hover:underline">
                             Login
-                        </a>
+                        </Link>
                     </p>
-                </div>
+                </motion.div>
             </div>
         </section>
     );
 };
 
-export default RegisterPage;
+export default Register;
