@@ -2,6 +2,9 @@ import { useState } from "react";
 import { ExploreCard } from "../components/ExploreCard";
 import { ExploreEmptyState } from "../components/ExploreEmptyState";
 import { ExploreFilterBar } from "../components/ExploreFilterBar";
+import { motion } from "framer-motion";
+
+import ChatWidget from "./ChatWidget";
 
 const mockData = [
     {
@@ -38,32 +41,42 @@ export const Explore = () => {
     });
 
     return (
-        <div className="max-w-screen-xl mx-auto px-6 py-10">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-semibold">Explore</h1>
-            </div>
+        <>
+            <motion.div
+                className="p-6"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+            >
+                <div className="max-w-screen-xl mx-auto px-6 py-10">
+                    <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-3xl font-semibold">Explore</h1>
+                    </div>
 
-            <ExploreFilterBar
-                search={search}
-                onSearchChange={setSearch}
-                selectedTags={selectedTags}
-                onTagToggle={(tag) =>
-                    setSelectedTags((prev) =>
-                        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                    )
-                }
-                onClearTags={() => setSelectedTags([])}
-            />
+                    <ExploreFilterBar
+                        search={search}
+                        onSearchChange={setSearch}
+                        selectedTags={selectedTags}
+                        onTagToggle={(tag) =>
+                            setSelectedTags((prev) =>
+                                prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                            )
+                        }
+                        onClearTags={() => setSelectedTags([])}
+                    />
 
-            {filtered.length === 0 ? (
-                <ExploreEmptyState />
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                    {filtered.map((item) => (
-                        <ExploreCard key={item.id} item={item} />
-                    ))}
+                    {filtered.length === 0 ? (
+                        <ExploreEmptyState />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                            {filtered.map((item) => (
+                                <ExploreCard key={item.id} item={item} />
+                            ))}
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
+            </motion.div >
+            <ChatWidget />
+        </>
     );
 };

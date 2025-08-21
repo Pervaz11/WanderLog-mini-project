@@ -3,6 +3,7 @@ import { JournalCard } from "../components/JournalCard";
 import { JournalEmptyState } from "../components/JournalEmptyState";
 import JournalFilterSidebar, { type Filters } from "../components/JournalFilterSidebar";
 import { motion } from "framer-motion";
+import ChatWidget from "./ChatWidget";
 
 const mockJournals = [
     {
@@ -39,44 +40,47 @@ export const Journal = () => {
     });
 
     return (
-        <div className="max-w-screen-xl mx-auto px-6 py-10">
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-semibold">Journal</h1>
-                <button className="px-5 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-md hover:opacity-90 transition">
-                    + Create New List
-                </button>
-            </div>
+        <>
+            <div className="max-w-screen-xl mx-auto px-6 py-10">
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-3xl font-semibold">Journal</h1>
+                    <button className="px-5 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-md hover:opacity-90 transition">
+                        + Create New List
+                    </button>
+                </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <input
-                    type="text"
-                    placeholder="Search your journal..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg shadow-sm text-sm"
-                />
-                <JournalFilterSidebar
-                    onApply={(f: SetStateAction<Filters | null>) => setFilters(f)}
-                    onClear={() => setFilters(null)}
-                />
-            </div>
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-            >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search your journal..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg shadow-sm text-sm"
+                    />
+                    <JournalFilterSidebar
+                        onApply={(f: SetStateAction<Filters | null>) => setFilters(f)}
+                        onClear={() => setFilters(null)}
+                    />
+                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4 }}
+                >
 
-                {filtered.length === 0 ? (
-                    <JournalEmptyState />
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filtered.map((journal) => (
-                            <JournalCard key={journal.id} journal={journal} />
-                        ))}
-                    </div>
-                )}
-            </motion.div>
-        </div>
+                    {filtered.length === 0 ? (
+                        <JournalEmptyState />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filtered.map((journal) => (
+                                <JournalCard key={journal.id} journal={journal} />
+                            ))}
+                        </div>
+                    )}
+                </motion.div>
+            </div>
+            <ChatWidget />
+        </>
     );
 };

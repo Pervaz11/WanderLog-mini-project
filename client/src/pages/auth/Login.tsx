@@ -1,194 +1,245 @@
+import { FcGoogle } from "react-icons/fc";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Github } from "lucide-react";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import Aurora from "../../components/ui/Aurora";
-import axios from "axios";
+import { useFormik } from "formik";
 import { useSnackbar } from "notistack";
+import loginValidationSchema from "../../../validations/loginValidation";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { post } from "../../../services/commonRequest";
+import { API_BASE_URL, endpoints } from "../../../services/api";
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../../features/userSlice";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import Aurora from "../../components/ui/Aurora";
+import { motion } from "framer-motion";
 
-const LoginPage = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+
+const Login = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { enqueueSnackbar } = useSnackbar();
     const [showPassword, setShowPassword] = useState(false);
 
-    const navigate = useNavigate();
-    const { enqueueSnackbar } = useSnackbar();
+    const message = searchParams.get("message");
+    const errorMessage = searchParams.get("error");
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get("token");
-        const user = params.get("user");
-
+        const token = searchParams.get("token");
         if (token) {
-            localStorage.setItem("token", token);
-            if (user) {
-                try {
-                    localStorage.setItem("user", user);
-                } catch { }
+            try {
+                const decoded = jwtDecode(token) as any;
+                localStorage.setItem("token", JSON.stringify(token));
+                dispatch(
+                    setUser({
+                        id: decoded.id,
+                        email: decoded.email,
+                        role: decoded.role,
+                        fullName: decoded.fullName,
+                        profileImage: decoded.profileImage,
+                        token: token || "",
+                    })
+                );
+                enqueueSnackbar("Google login successful!", {
+                    anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                    autoHideDuration: 2000,
+                    variant: "success",
+                });
+                navigate(decoded.role === "admin" ? "/admin" : "/");
+            } catch (e) {
+                enqueueSnackbar("Google login error!", {
+                    anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                    autoHideDuration: 2000,
+                    variant: "error",
+                });
             }
-            enqueueSnackbar("Login successful!", { variant: "success" });
-            navigate("/");
-        }
-    }, [navigate, enqueueSnackbar]);
-
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post("http://localhost:3000/auth/login", {
-                email,
-                password,
+        } else if (message) {
+            enqueueSnackbar(message, {
+                anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                autoHideDuration: 2000,
+                variant: "success",
             });
-
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
-
-            enqueueSnackbar("Login successful!", { variant: "success" });
-
-            navigate("/");
-        } catch (err: any) {
-            enqueueSnackbar(
-                err.response?.data?.message || "Login failed",
-                { variant: "error" }
-            );
         }
-    };
+    }, [message, searchParams, dispatch, enqueueSnackbar, navigate]);
+
+    useEffect(() => {
+        if (errorMessage) {
+            enqueueSnackbar("Google Sign In failed!", {
+                anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                autoHideDuration: 2000,
+                variant: "error",
+            });
+        }
+    }, [errorMessage]);
+
+    const formik = useFormik({
+        initialValues: { email: "", password: "" },
+        validationSchema: loginValidationSchema,
+        onSubmit: async (values) => {
+            try {
+                const res: { statusCode?: number; message: string; token?: string } =
+                    await post(`${endpoints.auth}/login`, values);
+
+                if (res.statusCode === 401) {
+                    enqueueSnackbar(res.message, {
+                        autoHideDuration: 2000,
+                        anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                        variant: "error",
+                    });
+                } else {
+                    enqueueSnackbar(res.message, {
+                        autoHideDuration: 2000,
+                        anchorOrigin: { vertical: "bottom", horizontal: "right" },
+                        variant: "success",
+                    });
+
+                    if (res.token) {
+                        const decoded: any = jwtDecode(res.token);
+                        localStorage.setItem("token", JSON.stringify(res.token));
+                        dispatch(
+                            setUser({
+                                id: decoded.id,
+                                email: decoded.email,
+                                role: decoded.role,
+                                fullName: decoded.fullName,
+                                profileImage: decoded.profileImage,
+                                token: res.token || "",
+                            })
+                        );
+                        navigate(decoded.role === "admin" ? "/admin" : "/");
+                    }
+                }
+            } catch (error) {
+                console.log("error: ", error);
+            }
+        },
+    });
 
     return (
-        <>
-            <section className="relative w-full min-h-screen bg-gradient-to-r from-blue-50 to-purple-100">
-                {/* Aurora background */}
-                <div className="absolute inset-0 z-0">
-                    <Aurora
-                        colorStops={["#7CFF67", "#B19EEF", "#6929FF"]}
-                        blend={0.5}
-                        amplitude={1.0}
-                        speed={0.5}
-                    />
-                </div>
+        <section className="relative w-full min-h-screen bg-gradient-to-r from-blue-50 to-purple-100">
+            {/* Aurora background */}
+            <div className="absolute inset-0 z-0">
+                <Aurora
+                    colorStops={["#7CFF67", "#B19EEF", "#6929FF"]}
+                    blend={0.5}
+                    amplitude={1.0}
+                    speed={0.5}
+                />
+            </div>
 
+            {/* Login form container */}
+            <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md"
+                >
+                    <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+                        Welcome Back
+                    </h2>
 
-                {/* Login form container */}
-                <div className="relative z-10 flex items-center justify-center min-h-screen px-4">
-                    <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md"
+                    {/* Google Login */}
+                    <button
+                        onClick={() => {
+                            window.location.href = `${API_BASE_URL}/auth/google`;
+                        }}
+                        className="w-full flex items-center justify-center gap-3 py-3 border border-gray-300 rounded-xl hover:bg-blue-50 transition mb-6"
                     >
-                        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-                            Welcome Back
-                        </h2>
+                        <FcGoogle size={22} />
+                        <span className="text-sm font-medium text-gray-700">
+                            Sign in with Google
+                        </span>
+                    </button>
 
-                        <form onSubmit={handleLogin} className="space-y-5">
-                            <div>
-                                <label className="block mb-1 text-gray-600">Email</label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="example@mail.com"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                />
-                            </div>
+                    {/* Divider */}
+                    <div className="relative mb-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="bg-white px-2 text-gray-500">
+                                or sign in with email
+                            </span>
+                        </div>
+                    </div>
 
-                            <div className="relative">
-                                <label className="block mb-1 text-gray-600">Password</label>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    required
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-xl pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                />
-                                <div
-                                    className="absolute right-3 top-9 cursor-pointer text-gray-500 hover:text-blue-500 transition"
-                                    onClick={() => setShowPassword((prev) => !prev)}
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </div>
+                    {/* Form */}
+                    <form onSubmit={formik.handleSubmit} className="space-y-4 text-sm">
+                        {/* Email */}
+                        <div>
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Email
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formik.values.email}
+                                onBlur={formik.handleBlur}
+                                onChange={formik.handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                placeholder="Email"
+                            />
+                            {formik.errors.email && formik.touched.email && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.email}
+                                </span>
+                            )}
+                        </div>
 
-                                {/* Forgot password button */}
-                                <div className="mt-2 text-right">
-                                    <Link
-                                        to="/auth/password"
-                                        className="inline-block text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition duration-200 ease-in-out"
-                                    >
-                                        Forgot Password?
-                                    </Link>
-                                </div>
-                            </div>
-
+                        {/* Password */}
+                        <div className="relative">
+                            <label className="block font-medium text-gray-600 mb-1">
+                                Password
+                            </label>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={formik.values.password}
+                                onBlur={formik.handleBlur}
+                                onChange={formik.handleChange}
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-12"
+                                placeholder="••••••••"
+                            />
                             <button
-                                type="submit"
-                                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl transition font-semibold"
+                                type="button"
+                                tabIndex={-1}
+                                className="absolute right-3 top-9 text-xl text-gray-600 hover:text-gray-800 focus:outline-none"
+                                onClick={() => setShowPassword((prev: boolean) => !prev)}
                             >
-                                Sign In
+                                {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                             </button>
-                        </form>
-
-                        <div className="flex items-center my-6">
-                            <div className="flex-grow h-px bg-gray-300" />
-                            <span className="mx-3 text-gray-500">or</span>
-                            <div className="flex-grow h-px bg-gray-300" />
+                            {formik.errors.password && formik.touched.password && (
+                                <span className="text-red-500 text-sm">
+                                    {formik.errors.password}
+                                </span>
+                            )}
                         </div>
 
-                        <div className="flex flex-col gap-3">
-                            <a
-                                href="http://localhost:3000/auth/google"
-                                className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    x="0px"
-                                    y="0px"
-                                    width="22"
-                                    viewBox="0 0 48 48"
-                                >
-                                    <path
-                                        fill="#FFC107"
-                                        d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-                                    ></path>
-                                    <path
-                                        fill="#FF3D00"
-                                        d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-                                    ></path>
-                                    <path
-                                        fill="#4CAF50"
-                                        d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-                                    ></path>
-                                    <path
-                                        fill="#1976D2"
-                                        d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-                                    ></path>
-                                </svg>
-                                Continue with Google
-                            </a>
+                        {/* Login Button */}
+                        <button
+                            disabled={
+                                formik.isSubmitting ||
+                                !formik.dirty ||
+                                Object.entries(formik.errors).length > 0
+                            }
+                            type="submit"
+                            className="w-full py-3 disabled:bg-blue-400 disabled:cursor-not-allowed cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition mt-2"
+                        >
+                            Login
+                        </button>
+                    </form>
 
-                            <a
-                                href="http://localhost:3000/auth/github"
-                                className="flex items-center justify-center gap-2 w-full py-2 border border-gray-300 rounded-xl hover:bg-gray-100 transition text-sm font-medium"
-                            >
-                                <Github className="w-5 h-5" />
-                                Continue with GitHub
-                            </a>
-                        </div>
-
-                        <p className="mt-6 text-center text-sm text-gray-500">
-                            Don't have an account?{" "}
-                            <Link
-                                to="/auth/register"
-                                className="text-blue-600 hover:underline font-medium"
-                            >
-                                Register
-                            </Link>
-                        </p>
-                    </motion.div>
-                </div>
-            </section>
-        </>
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        Don’t have an account?{" "}
+                        <Link to="/auth/register" className="text-blue-600 hover:underline">
+                            Register
+                        </Link>
+                    </p>
+                </motion.div>
+            </div>
+        </section>
     );
 };
 
-export default LoginPage;
+export default Login;
